@@ -1,17 +1,26 @@
 import React, { useState } from "react";
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Menu = () => {
   const [selectedMenu, setSelectedMenu] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleMenuClick = (index) => {
     setSelectedMenu(index);
   };
 
-  const handleProfileClick = (index) => {
+  const handleProfileClick = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    // Clear auth data
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Redirect to login page
+    window.location.href = "http://localhost:3000/";
   };
 
   const menuClass = "menu";
@@ -19,13 +28,13 @@ const Menu = () => {
 
   return (
     <div className="menu-container">
-      <img src="logo.png" style={{ width: "50px" }} />
+      <img src="logo.png" style={{ width: "50px" }} alt="logo" />
       <div className="menus">
         <ul>
           <li>
             <Link
-              style={{ textDecoration: "none" }}
               to="/"
+              style={{ textDecoration: "none" }}
               onClick={() => handleMenuClick(0)}
             >
               <p className={selectedMenu === 0 ? activeMenuClass : menuClass}>
@@ -35,8 +44,8 @@ const Menu = () => {
           </li>
           <li>
             <Link
-              style={{ textDecoration: "none" }}
               to="/orders"
+              style={{ textDecoration: "none" }}
               onClick={() => handleMenuClick(1)}
             >
               <p className={selectedMenu === 1 ? activeMenuClass : menuClass}>
@@ -46,8 +55,8 @@ const Menu = () => {
           </li>
           <li>
             <Link
-              style={{ textDecoration: "none" }}
               to="/holdings"
+              style={{ textDecoration: "none" }}
               onClick={() => handleMenuClick(2)}
             >
               <p className={selectedMenu === 2 ? activeMenuClass : menuClass}>
@@ -57,8 +66,8 @@ const Menu = () => {
           </li>
           <li>
             <Link
-              style={{ textDecoration: "none" }}
               to="/positions"
+              style={{ textDecoration: "none" }}
               onClick={() => handleMenuClick(3)}
             >
               <p className={selectedMenu === 3 ? activeMenuClass : menuClass}>
@@ -68,8 +77,8 @@ const Menu = () => {
           </li>
           <li>
             <Link
+              to="/funds"
               style={{ textDecoration: "none" }}
-              to="funds"
               onClick={() => handleMenuClick(4)}
             >
               <p className={selectedMenu === 4 ? activeMenuClass : menuClass}>
@@ -79,8 +88,8 @@ const Menu = () => {
           </li>
           <li>
             <Link
-              style={{ textDecoration: "none" }}
               to="/apps"
+              style={{ textDecoration: "none" }}
               onClick={() => handleMenuClick(6)}
             >
               <p className={selectedMenu === 6 ? activeMenuClass : menuClass}>
@@ -90,9 +99,25 @@ const Menu = () => {
           </li>
         </ul>
         <hr />
-        <div className="profile" onClick={handleProfileClick}>
-          <div className="avatar">ZU</div>
-          <p className="username">USERID</p>
+        <div className="profile-dropdown">
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: "#dc3545", // Bootstrap danger red
+              color: "#fff", // white text
+              border: "none",
+              borderRadius: "6px",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "background-color 0.3s ease",
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#c82333")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#dc3545")}
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>

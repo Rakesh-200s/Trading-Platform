@@ -9,7 +9,6 @@ import Order from "./Orders";
 import Position from "./Positions";
 import Summary from "./Summary";
 import WatchList from "./WatchList";
-import Logout  from "./Logout";
 import { GeneralContextProvider } from "./GeneralContext";
 
 const Dashboard = () => {
@@ -26,7 +25,6 @@ const Dashboard = () => {
           <Route path="/positions" element={<Position/>} />
           <Route path="/funds" element={<Fund/>} />
           <Route path="/apps" element={<Apps />} />
-          <Route path="/logout" element={<Logout/>}/>
         </Routes>
       </div>
     </div>

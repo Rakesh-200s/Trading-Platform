@@ -2,10 +2,10 @@ const User = require("../model/user");
 const { createSecretToken } = require("../utils/secretToken");
 const bcrypt = require("bcrypt");
 
+// SIGNUP
 module.exports.Signup = async (req, res) => {
   try {
-   
-    const { email, password, username, createdAt } = req.body;
+    const { email, password, username } = req.body;
 
     // check if user already exists
     const existingUser = await User.findOne({ email });
@@ -13,16 +13,8 @@ module.exports.Signup = async (req, res) => {
       return res.status(409).json({ message: "User already exists" });
     }
 
- 
-    
-
-    // create new user
-    const user = await User.create({
-      email,
-      password,
-      username,
-      createdAt,
-    });
+    // create new user (password will be hashed by pre-save hook in model)
+    const user = await User.create({ email, password, username });
 
     // generate token
     const token = createSecretToken(user._id);
@@ -34,32 +26,41 @@ module.exports.Signup = async (req, res) => {
       sameSite: "lax",
     });
 
-    // send response once
     return res.status(201).json({
       message: "User signed up successfully",
       success: true,
-      user,
+      user: { id: user._id, email: user.email, username: user.username },
     });
   } catch (error) {
     console.error("Signup error:", error);
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-//login section 
+
+// LOGIN
 module.exports.Login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body; 
+    // frontend sends identifier (email or username)
 
-    console.log("LOGIN EMAIL:", email);
+    console.log("LOGIN IDENTIFIER:", identifier);
     console.log("LOGIN PASSWORD:", password);
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message: "Email/Username and password are required",
       });
     }
 
-    const user = await User.findOne({ email });
+    // check if identifier is email or username
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let user;
+
+    if (emailRegex.test(identifier)) {
+      user = await User.findOne({ email: identifier });
+    } else {
+      user = await User.findOne({ username: identifier });
+    }
 
     console.log("USER FOUND:", !!user);
 
@@ -69,10 +70,7 @@ module.exports.Login = async (req, res) => {
       });
     }
 
-    console.log("DB PASSWORD:", user.password);
-
     const isMatch = await bcrypt.compare(password, user.password);
-
     console.log("PASSWORD MATCH:", isMatch);
 
     if (!isMatch) {
@@ -92,29 +90,27 @@ module.exports.Login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       success: true,
+      user: { id: user._id, email: user.email, username: user.username }
     });
 
   } catch (error) {
     console.error("Login error:", error);
-
-    return res.status(500).json({
-      message: "Server error",
-    });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 
-//logout
-
-module.exports.Logout= async(req,res)=>{
-  try{
-    res.clearCookie("token",{
-      httpOnly:true,
-      secure:false,
-      sameSite:"lax",
-    })
-    return res.status(200).json({message:"logout Successfully" ,success:true,})
-  }catch(error){
-    console.error("logout error",error);
-  }return res.status(500).json({message:"server error"});
-}
+// LOGOUT
+module.exports.Logout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+    return res.status(200).json({ message: "Logout successfully", success: true });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

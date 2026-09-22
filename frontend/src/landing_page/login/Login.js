@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import './Login.css'
-
+import './Login.css';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ emailOrUsername: "", password: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -11,11 +10,23 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Helper: check if input is a valid email
+  const isValidEmail = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
+    if (!formData.emailOrUsername || !formData.password) {
       setError("Please fill all fields");
+      return;
+    }
+
+    // Validate email or username
+    if (!isValidEmail(formData.emailOrUsername) && formData.emailOrUsername.length < 3) {
+      setError("Enter a valid email or username (min 3 chars)");
       return;
     }
 
@@ -25,19 +36,24 @@ const Login = () => {
       const response = await fetch("http://localhost:3002/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-        credentials:"include" // include cookies
+        body: JSON.stringify({
+          identifier: formData.emailOrUsername, // backend should accept either email or username
+          password: formData.password,
+        }),
+        credentials: "include",
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-      setError(data.message||"login failed");
-      return;
+        setError(data.message || "Login failed");
+        return;
       }
-       window.location.href="http://localhost:3001/";
+
+      // Redirect to dashboard (frontend home)
+      window.location.href = "http://localhost:3001/";
     } catch (err) {
-      console.error(error);
+      console.error(err);
       setError("Server error. Please try again.");
     }
   };
@@ -50,10 +66,10 @@ const Login = () => {
         {success && <p style={{ color: "green" }}>{success}</p>}
 
         <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          value={formData.email}
+          type="text"
+          name="emailOrUsername"
+          placeholder="Enter email or username"
+          value={formData.emailOrUsername}
           onChange={handleChange}
         />
         <input
